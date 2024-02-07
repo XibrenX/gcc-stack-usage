@@ -3,7 +3,7 @@
 	"displayName": "Gcc stack usage",
 	"description": "Show gcc stack usage anaylisis for functions in VSCode",
 	"version": "0.1.1",
-	"publisher": "Wibren Wiersma",
+	"publisher": "wibren-wiersma",
 	"repository": "https://github.com/XibrenX/gcc-stack-usage",
 	"engines": {
 		"vscode": "^1.74.0"
