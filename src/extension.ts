@@ -12,7 +12,7 @@ import { CurrentFileStackUsageDataProvider } from './currentFileStackUsageDataPr
 export function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "gcc-advanced" is now active!');
+	console.log('Extension "gcc-stack-usage" is now active!');
 
 	// const watcher = vscode.workspace.createFileSystemWatcher('**/*.su');
 	// watcher.onDidChange(uri => console.log('Watcher onDidChange: ' + uri.toString()))
@@ -24,11 +24,11 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(suStore);
 
 	vscode.languages.registerCodeLensProvider({ language: 'cpp'}, new CodeLensProvider(suStore))
-	vscode.window.registerTreeDataProvider('gcc-advanced.globalStackUsage', new GlobalStackUsageDataProvider(suStore))
-	vscode.window.registerTreeDataProvider('gcc-advanced.currentFileStackUsage', new CurrentFileStackUsageDataProvider(suStore))
+	vscode.window.registerTreeDataProvider('gcc-stack-usage.globalStackUsage', new GlobalStackUsageDataProvider(suStore))
+	vscode.window.registerTreeDataProvider('gcc-stack-usage.currentFileStackUsage', new CurrentFileStackUsageDataProvider(suStore))
 	
 
-	context.subscriptions.push(vscode.commands.registerCommand('gcc-advanced.updateSuStore', async () => {
-		suStore.update()
+	context.subscriptions.push(vscode.commands.registerCommand('gcc-stack-usage.updateSuStore', async () => {
+		await suStore.update()
 	}));
 }

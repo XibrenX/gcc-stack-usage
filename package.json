@@ -1,10 +1,10 @@
 {
 	"name": "gcc-stack-usage",
 	"displayName": "Gcc stack usage",
-	"description": "Show advanced gcc compile information in VSCode",
+	"description": "Show gcc stack usage anaylisis for functions in VSCode",
 	"version": "0.1.1",
 	"publisher": "Wibren Wiersma",
-	"repository": "",
+	"repository": "https://github.com/XibrenX/gcc-stack-usage",
 	"engines": {
 		"vscode": "^1.74.0"
 	},
@@ -19,7 +19,7 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "gcc-advanced.updateSuStore",
+				"command": "gcc-stack-usage.updateSuStore",
 				"title": "Reload su files",
 				"icon": "$(refresh)"
 			}
@@ -27,35 +27,35 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "gcc-advanced",
+					"id": "gcc-stack-usage",
 					"title": "Gcc advanced",
 					"icon": "$(symbol-structure)"
 				}
 			]
 		},
 		"views": {
-			"gcc-advanced": [
+			"gcc-stack-usage": [
 				{
-					"id": "gcc-advanced.globalStackUsage",
+					"id": "gcc-stack-usage.globalStackUsage",
 					"name": "Global stack usage"
 				},
 				{
-					"id": "gcc-advanced.currentFileStackUsage",
+					"id": "gcc-stack-usage.currentFileStackUsage",
 					"name": "Current file stack usage"
 				}
 			]
 		},
 		"viewsWelcome": [
 			{
-				"view": "gcc-advanced.globalStackUsage",
-				"contents": "No su files currently loaded. Compile with `-fstack-usage` flag and hit [reload](command:gcc-advanced.updateSuStore)."
+				"view": "gcc-stack-usage.globalStackUsage",
+				"contents": "No su files currently loaded. Compile with `-fstack-usage` flag and hit [reload](command:gcc-stack-usage.updateSuStore)."
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
-					"command": "gcc-advanced.updateSuStore",
-					"when": "view == gcc-advanced.globalStackUsage",
+					"command": "gcc-stack-usage.updateSuStore",
+					"when": "view == gcc-stack-usage.globalStackUsage",
 					"group": "navigation"
 				}
 			]
