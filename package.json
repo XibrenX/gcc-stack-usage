@@ -28,7 +28,7 @@
 			"activitybar": [
 				{
 					"id": "gcc-stack-usage",
-					"title": "Gcc advanced",
+					"title": "Gcc stack usage",
 					"icon": "$(symbol-structure)"
 				}
 			]
