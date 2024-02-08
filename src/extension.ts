@@ -14,21 +14,24 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Extension "gcc-stack-usage" is now active!');
 
-	// const watcher = vscode.workspace.createFileSystemWatcher('**/*.su');
-	// watcher.onDidChange(uri => console.log('Watcher onDidChange: ' + uri.toString()))
-	// watcher.onDidCreate(uri => console.log('Watcher onDidCreate: ' + uri.toString()))
-	// watcher.onDidDelete(uri => console.log('Watcher onDidDelete: ' + uri.toString()))
-	// context.subscriptions.push(watcher);
-
 	const suStore = new SuStore()
 	context.subscriptions.push(suStore);
 
-	vscode.languages.registerCodeLensProvider({ language: 'cpp'}, new CodeLensProvider(suStore))
+	const watcher = vscode.workspace.createFileSystemWatcher('**/*.su');
+	watcher.onDidCreate(uri => suStore.onAddOrUpdate(uri))
+	watcher.onDidChange(uri => suStore.onAddOrUpdate(uri))
+	watcher.onDidDelete(uri => suStore.onDelete(uri))
+	context.subscriptions.push(watcher);
+
+	const codeLensProvider = new CodeLensProvider(suStore)
+	vscode.languages.registerCodeLensProvider({ language: 'cpp' }, codeLensProvider)
+	vscode.languages.registerCodeLensProvider({ language: 'c' }, codeLensProvider)
 	vscode.window.registerTreeDataProvider('gcc-stack-usage.globalStackUsage', new GlobalStackUsageDataProvider(suStore))
 	vscode.window.registerTreeDataProvider('gcc-stack-usage.currentFileStackUsage', new CurrentFileStackUsageDataProvider(suStore))
 	
-
 	context.subscriptions.push(vscode.commands.registerCommand('gcc-stack-usage.updateSuStore', async () => {
 		await suStore.update()
 	}));
+
+	suStore.update()
 }

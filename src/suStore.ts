@@ -27,45 +27,57 @@ export class SuLine {
 
 export class SuFile
 {
-    private _lines: SuLine[]
+    private readonly _lines: SuLine[] = []
     
     public get lines(): SuLine[] { 
         return this._lines
     }
 
-    private constructor(public readonly file: vscode.Uri, public readonly lastWritten: number) {
+    constructor(public readonly file: vscode.Uri, public lastWritten: number = 0) {
         this._lines = []
     }
 
-    static async getFile(file: vscode.Uri): Promise<SuFile>
+    async update()
     {
-        const stat = await vscode.workspace.fs.stat(file)
-        let suFile = new SuFile(file, stat.mtime)
+        this.lines.length = 0
 
-        const content = await vscode.workspace.fs.readFile(file)
-        const contentStr = Buffer.from(content).toString('utf8');
-
-        var start = 0
-        var lineIndex = 0
-        while (start < contentStr.length)
+        try
         {
-            const end = contentStr.indexOf('\n', start)
-            suFile._lines.push(new SuLine(contentStr.substring(start, end), suFile, new vscode.Position(lineIndex, 0)))
-            start = end + 1
-            lineIndex += 1
-        }
+            const stat = await vscode.workspace.fs.stat(this.file)
+            this.lastWritten = stat.mtime
 
-        return suFile
+            const content = await vscode.workspace.fs.readFile(this.file)
+            const contentStr = Buffer.from(content).toString('utf8');
+
+            var start = 0
+            var lineIndex = 0
+            while (start < contentStr.length) {
+                const end = contentStr.indexOf('\n', start)
+                this._lines.push(new SuLine(contentStr.substring(start, end), this, new vscode.Position(lineIndex, 0)))
+                start = end + 1
+                lineIndex += 1
+            }
+        }
+        catch (error)
+        {
+            console.error(error)
+        }
+    }
+
+    onDelete()
+    {
+        this.lines.length = 0
+        this.lastWritten = new Date().getTime()
     }
 }
 
 export class SuStore
 {
-    private _files: SuFile[] = []
+    private readonly _files = new Map<String, SuFile>()
     private _onFilesUpdated: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     readonly onFilesUpdated: vscode.Event<void> = this._onFilesUpdated.event
 
-    public get files(): SuFile[] { return this._files }
+    public get files(): SuFile[] { return Array.from(this._files.values()) }
 
     async update()
     {
@@ -76,15 +88,23 @@ export class SuStore
         }, async (progress) => {
 
             progress.report({ increment: 0 });
+            for(const file of this.files)
+            {
+                file.onDelete()
+            }
 
-            this._files = []
             let uris = await vscode.workspace.findFiles('**/*.su', null)
-            await Promise.all(uris.map(async uri => this._files.push(await SuFile.getFile(uri))))
-            console.log(`Found ${this._files.length} .su files`)
+            await Promise.all(uris.map(async uri => {
+                let suFile = this._files.get(uri.fsPath) ?? new SuFile(uri)
+                this._files.set(uri.fsPath, suFile)
+
+                await suFile.update()
+            }))
+            console.log(`Found ${this._files.size} .su files`)
 
             progress.report({ increment: 100 });
 
-            if (this._files.length == 0)
+            if (this._files.size == 0)
             {
                 vscode.window.showWarningMessage('No .su files found!\nPlease compile with `-fstack-usage`.')
             }
@@ -92,8 +112,31 @@ export class SuStore
         this._onFilesUpdated.fire()
     }
 
+    async onAddOrUpdate(uri: vscode.Uri)
+    {
+        console.log(`On add or update ${uri.fsPath}`)
+
+        let suFile = this._files.get(uri.fsPath) ?? new SuFile(uri)
+        this._files.set(uri.fsPath, suFile)
+
+        await suFile.update()
+        this._onFilesUpdated.fire()
+    }
+
+    async onDelete(uri: vscode.Uri)
+    {
+        console.log(`On delete ${uri.fsPath}`)
+
+        let suFile = this._files.get(uri.fsPath)
+        if (suFile)
+        {
+            suFile.onDelete()
+            this._onFilesUpdated.fire()
+        }
+    }
+
     dispose()
     {
-        this._files = []
+        this._files.clear()
     }
 }

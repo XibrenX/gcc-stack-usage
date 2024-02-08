@@ -1,8 +1,8 @@
 {
 	"name": "gcc-stack-usage",
 	"displayName": "Gcc stack usage",
-	"description": "Show gcc stack usage anaylisis for functions in VSCode",
-	"version": "0.1.1",
+	"description": "Show gcc stack usage analysis for functions in VSCode",
+	"version": "1.0.0",
 	"publisher": "wibren-wiersma",
 	"repository": "https://github.com/XibrenX/gcc-stack-usage",
 	"engines": {
@@ -14,7 +14,10 @@
 	"extensionKind": [
 		"workspace"
 	],
-	"activationEvents": [],
+	"activationEvents": [
+		"onLanguage:cpp",
+		"onLanguage:c"
+	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
