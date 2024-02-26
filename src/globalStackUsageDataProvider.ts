@@ -9,7 +9,7 @@ class GlobalStackUsageTreeItem extends vscode.TreeItem
         super(suLine.stack.toString())
         this.description = suLine.function
         this.command = {
-            title: 'Jump to code', command: 'workbench.action.quickOpen', arguments: [`"${suLine.fileName}":${suLine.position.line + 1}:${suLine.position.character + 1}`] }
+            title: 'Jump to code', command: 'workbench.action.quickOpen', arguments: [`"${suLine.fileName.split(path.sep).at(-1)}":${suLine.position.line + 1}:${suLine.position.character + 1}`] }
         this.tooltip = `${suLine.suFile.file.fsPath.split(path.sep).at(-1)} ${suLine.stack} ${suLine.function}`
     }
 }

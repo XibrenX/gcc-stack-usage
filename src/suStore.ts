@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as path from 'path'
+import { AsyncOperationsStore } from './asyncOperationsStore';
 
 export enum StackKind {
     static,
@@ -22,6 +24,17 @@ export class SuLine {
 
         this.stack = Number(parts[1])
         this.stackKind = parts[2] == 'static' ? StackKind.static : StackKind.dynamic
+    }
+
+    matchesFileName(otherFileName: string): boolean
+    {
+        let matchFileName = this.fileName
+        if (!matchFileName.startsWith(path.sep))
+        {
+            matchFileName = path.sep + matchFileName
+        }
+
+        return otherFileName.endsWith(matchFileName)
     }
 }
 
@@ -74,69 +87,69 @@ export class SuFile
 export class SuStore
 {
     private readonly _files = new Map<String, SuFile>()
-    private _onFilesUpdated: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
-    readonly onFilesUpdated: vscode.Event<void> = this._onFilesUpdated.event
+    private readonly _asyncOperationsStore = new AsyncOperationsStore()
 
+    public get onFilesUpdated(): vscode.Event<void> { return this._asyncOperationsStore.onAllOperationsDone }
     public get files(): SuFile[] { return Array.from(this._files.values()) }
 
-    async update()
+    update()
     {
-        await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Window,
-            cancellable: false,
-            title: 'Reading su files'
-        }, async (progress) => {
+        this._asyncOperationsStore.addOperation(async () => {
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Window,
+                cancellable: false,
+                title: 'Reading su files'
+            }, async (progress) => {
 
-            progress.report({ increment: 0 });
-            for(const file of this.files)
-            {
-                file.onDelete()
-            }
+                progress.report({ increment: 0 });
+                for(const file of this.files)
+                {
+                    file.onDelete()
+                }
 
-            let uris = await vscode.workspace.findFiles('**/*.su', null)
-            await Promise.all(uris.map(async uri => {
-                let suFile = this._files.get(uri.fsPath) ?? new SuFile(uri)
-                this._files.set(uri.fsPath, suFile)
+                let uris = await vscode.workspace.findFiles('**/*.su', null)
+                await Promise.all(uris.map(async uri => {
+                    let suFile = this._files.get(uri.fsPath) ?? new SuFile(uri)
+                    this._files.set(uri.fsPath, suFile)
 
-                await suFile.update()
-            }))
-            console.log(`Found ${this._files.size} .su files`)
+                    await suFile.update()
+                }))
+                console.log(`Found ${this._files.size} .su files`)
 
-            progress.report({ increment: 100 });
+                progress.report({ increment: 100 });
 
-            if (this._files.size == 0)
-            {
-                vscode.window.showWarningMessage('No .su files found!\nPlease compile with `-fstack-usage`.')
-            }
-        });
-        this._onFilesUpdated.fire()
+                if (this._files.size == 0)
+                {
+                    vscode.window.showWarningMessage('No .su files found!\nPlease compile with `-fstack-usage`.')
+                }
+            })
+        })
     }
 
-    async onAddOrUpdate(uri: vscode.Uri)
+    onAddOrUpdate(uri: vscode.Uri)
     {
-        console.log(`On add or update ${uri.fsPath}`)
-
-        let suFile = this._files.get(uri.fsPath) ?? new SuFile(uri)
-        this._files.set(uri.fsPath, suFile)
-
-        await suFile.update()
-        this._onFilesUpdated.fire()
+        this._asyncOperationsStore.addOperation(async () => {
+            console.log(`On add or update ${uri.fsPath}`)
+            let suFile = this._files.get(uri.fsPath) ?? new SuFile(uri)
+            this._files.set(uri.fsPath, suFile)
+            await suFile.update()
+        })
     }
 
-    async onDelete(uri: vscode.Uri)
+    onDelete(uri: vscode.Uri)
     {
-        console.log(`On delete ${uri.fsPath}`)
-
-        let suFile = this._files.get(uri.fsPath)
-        if (suFile)
-        {
-            suFile.onDelete()
-            this._onFilesUpdated.fire()
-        }
+        this._asyncOperationsStore.addOperation(async () => {
+            console.log(`On delete ${uri.fsPath}`)
+            let suFile = this._files.get(uri.fsPath)
+            if (suFile) {
+                suFile.onDelete()
+            }
+        })
     }
 
     dispose()
     {
+        this._asyncOperationsStore.dispose()
         this._files.clear()
     }
 }
