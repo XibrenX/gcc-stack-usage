@@ -25,15 +25,14 @@ export class CurrentFileStackUsageDataProvider implements vscode.TreeDataProvide
         return element
     }
     getChildren(element?: CurrentFileStackUsageTreeItem | undefined): vscode.ProviderResult<CurrentFileStackUsageTreeItem[]> {
-        let activeTextEditor = vscode.window.activeTextEditor
+        const activeTextEditor = vscode.window.activeTextEditor
 
         if (element || !activeTextEditor) {
             return []
         }
+        const filename = activeTextEditor.document.fileName
 
-        const onlyFileName = activeTextEditor.document.fileName.split(path.sep).at(-1)
-
-        return this.suStore.files.flatMap(f => f.lines).filter(l => l.fileName == onlyFileName).sort((la, lb) => lb.stack - la.stack).map(l => new CurrentFileStackUsageTreeItem(l))
+        return this.suStore.files.flatMap(f => f.lines).filter(l => l.matchesFileName(filename)).sort((la, lb) => lb.stack - la.stack).map(l => new CurrentFileStackUsageTreeItem(l))
     }
 
     resolveTreeItem(item: vscode.TreeItem, element: CurrentFileStackUsageTreeItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem>

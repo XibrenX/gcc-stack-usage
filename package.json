@@ -2,7 +2,7 @@
 	"name": "gcc-stack-usage",
 	"displayName": "Gcc stack usage",
 	"description": "Show gcc stack usage analysis for functions in VSCode",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "wibren-wiersma",
 	"repository": "https://github.com/XibrenX/gcc-stack-usage",
 	"engines": {
@@ -23,7 +23,7 @@
 		"commands": [
 			{
 				"command": "gcc-stack-usage.updateSuStore",
-				"title": "Reload su files",
+				"title": "Gcc stack usage: Reload su files",
 				"icon": "$(refresh)"
 			}
 		],

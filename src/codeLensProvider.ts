@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { SuStore } from './suStore';
-import * as path from 'path'
 
 export class CodeLensProvider implements vscode.CodeLensProvider
 {
@@ -11,9 +10,7 @@ export class CodeLensProvider implements vscode.CodeLensProvider
     readonly onDidChangeCodeLenses = this.suStore.onFilesUpdated
 
     provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeLens[]> {
-        const onlyFileName = document.fileName.split(path.sep).at(-1)
-
-        let lines = this.suStore.files.flatMap(f => f.lines).filter(l => l.fileName == onlyFileName)
+        let lines = this.suStore.files.flatMap(f => f.lines).filter(l => l.matchesFileName(document.fileName))
 
         let codeLenses = []
         for (const line of lines)
@@ -29,7 +26,7 @@ export class CodeLensProvider implements vscode.CodeLensProvider
             }
         }
 
-        console.log(`Created ${codeLenses.length} for ${lines.length} su lines for ${onlyFileName}`)
+        console.log(`Created ${codeLenses.length} for ${lines.length} su lines for ${document.fileName}`)
 
         return codeLenses
     }
