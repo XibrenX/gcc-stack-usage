@@ -1,6 +1,12 @@
 # Gcc stack usage
 Compile your code with `-fstack-usage`, after that run the `reload su files` command in vscode.
 
+# FAQ
+## Stack usage not shown above function
+Possible reasons:
+1. The vscode extension cannot map the output of gcc to the correct file.
+2. The function is inlined by the compiler. Compile again by forcing not to inline the function with `__attribute__ ((noinline))`.
+
 # Known issues
 Here are some known issues and workarounds.
 

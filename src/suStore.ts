@@ -36,6 +36,15 @@ export class SuLine {
 
         return otherFileName.endsWith(matchFileName)
     }
+
+    static sortDescending(lhs: SuLine, rhs: SuLine): number
+    {
+        if (lhs.stackKind !== rhs.stackKind)
+        {
+            return rhs.stackKind - lhs.stackKind;
+        }
+        return rhs.stack - lhs.stack;
+    }
 }
 
 export class SuFile
@@ -62,8 +71,8 @@ export class SuFile
             const content = await vscode.workspace.fs.readFile(this.file)
             const contentStr = Buffer.from(content).toString('utf8');
 
-            var start = 0
-            var lineIndex = 0
+            let start = 0
+            let lineIndex = 0
             while (start < contentStr.length) {
                 const end = contentStr.indexOf('\n', start)
                 this._lines.push(new SuLine(contentStr.substring(start, end), this, new vscode.Position(lineIndex, 0)))
@@ -86,7 +95,7 @@ export class SuFile
 
 export class SuStore
 {
-    private readonly _files = new Map<String, SuFile>()
+    private readonly _files = new Map<string, SuFile>()
     private readonly _asyncOperationsStore = new AsyncOperationsStore()
 
     public get onFilesUpdated(): vscode.Event<void> { return this._asyncOperationsStore.onAllOperationsDone }

@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { SuStore, SuLine } from './suStore';
+import { SuStore, SuLine, StackKind } from './suStore';
 import * as path from 'path'
 
 class GlobalStackUsageTreeItem extends vscode.TreeItem
 {
     constructor(public readonly suLine: SuLine)
     {
-        super(suLine.stack.toString())
+        super([suLine.stack, suLine.stackKind === StackKind.dynamic ? 'dynamic' : undefined].join(' '))
         this.description = suLine.function
         this.command = {
             title: 'Jump to code', command: 'workbench.action.quickOpen', arguments: [`"${suLine.fileName.split(path.sep).at(-1)}":${suLine.position.line + 1}:${suLine.position.character + 1}`] }
@@ -16,7 +16,7 @@ class GlobalStackUsageTreeItem extends vscode.TreeItem
 
 export class GlobalStackUsageDataProvider implements vscode.TreeDataProvider<GlobalStackUsageTreeItem>
 {
-    constructor(private suStore: SuStore)
+    constructor(private readonly suStore: SuStore)
     {}
 
     readonly onDidChangeTreeData = this.suStore.onFilesUpdated
@@ -30,6 +30,6 @@ export class GlobalStackUsageDataProvider implements vscode.TreeDataProvider<Glo
             return []
         }
 
-        return this.suStore.files.flatMap(v => v.lines).sort((la, lb) => lb.stack - la.stack).slice(0, 100).map(l => new GlobalStackUsageTreeItem(l))
+        return this.suStore.files.flatMap(v => v.lines).sort(SuLine.sortDescending).slice(0, 100).map(l => new GlobalStackUsageTreeItem(l))
     }
 }

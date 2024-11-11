@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { SuStore, SuLine } from './suStore';
+import { SuStore, SuLine, StackKind } from './suStore';
 import * as path from 'path'
 
 class CurrentFileStackUsageTreeItem extends vscode.TreeItem {
     constructor(public readonly suLine: SuLine) {
-        super(suLine.stack.toString())
+        super([suLine.stack, suLine.stackKind === StackKind.dynamic ? 'dynamic' : undefined].join(' '))
         this.description = suLine.function
         this.tooltip = `${suLine.suFile.file.fsPath.split(path.sep).at(-1)} ${suLine.stack} ${suLine.function}`
     }
@@ -12,9 +12,9 @@ class CurrentFileStackUsageTreeItem extends vscode.TreeItem {
 
 export class CurrentFileStackUsageDataProvider implements vscode.TreeDataProvider<CurrentFileStackUsageTreeItem>
 {
-    private _onDidChangeTreeData = new vscode.EventEmitter<void>()
+    private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>()
 
-    constructor(private suStore: SuStore) {
+    constructor(private readonly suStore: SuStore) {
         this.suStore.onFilesUpdated(() => this._onDidChangeTreeData.fire())
         vscode.window.onDidChangeActiveTextEditor(() => this._onDidChangeTreeData.fire())
     }
@@ -32,7 +32,7 @@ export class CurrentFileStackUsageDataProvider implements vscode.TreeDataProvide
         }
         const filename = activeTextEditor.document.fileName
 
-        return this.suStore.files.flatMap(f => f.lines).filter(l => l.matchesFileName(filename)).sort((la, lb) => lb.stack - la.stack).map(l => new CurrentFileStackUsageTreeItem(l))
+        return this.suStore.files.flatMap(f => f.lines).filter(l => l.matchesFileName(filename)).sort(SuLine.sortDescending).map(l => new CurrentFileStackUsageTreeItem(l))
     }
 
     resolveTreeItem(item: vscode.TreeItem, element: CurrentFileStackUsageTreeItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem>

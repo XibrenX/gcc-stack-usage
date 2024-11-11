@@ -4,13 +4,13 @@ const DEFAULT_TIMEOUT_MS = 1000
 
 export class AsyncOperationsStore
 {
-    private _timerRunning: Boolean = false
+    private _timerRunning: boolean = false
     private _timerId: NodeJS.Timeout | null = null
-    private _timerInvalidated: Boolean = false
-    private _store: Array<() => Promise<any>> = []
-    private _disposed: Boolean = false
+    private _timerInvalidated: boolean = false
+    private readonly _store: Array<() => Promise<any>> = []
+    private _disposed: boolean = false
 
-    private _onAllOperationsDone: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+    private readonly _onAllOperationsDone: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     readonly onAllOperationsDone: vscode.Event<void> = this._onAllOperationsDone.event
 
     addOperation(operation: () => Promise<any>)

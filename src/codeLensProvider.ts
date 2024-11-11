@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { SuStore } from './suStore';
+import { StackKind, SuStore } from './suStore';
 
 export class CodeLensProvider implements vscode.CodeLensProvider
 {
-    constructor(private suStore: SuStore)
+    constructor(private readonly suStore: SuStore)
     {
     }
 
@@ -18,7 +18,8 @@ export class CodeLensProvider implements vscode.CodeLensProvider
             const range = document.getWordRangeAtPosition(line.position)
             if (range)
             {
-                codeLenses.push(new vscode.CodeLens(range, { title: `Stack: ${line.stack}`, tooltip: line.function, command: 'editor.action.goToLocations', arguments: [document.uri, line.position, [new vscode.Location(line.suFile.file, line.suPosition)], 'goto', 'Su reference not found']}))
+                const title = ['Stack:', line.stack, line.stackKind === StackKind.dynamic ? 'dynamic' : undefined].filter(Boolean).join(' ')
+                codeLenses.push(new vscode.CodeLens(range, { title: title, tooltip: line.function, command: 'editor.action.goToLocations', arguments: [document.uri, line.position, [new vscode.Location(line.suFile.file, line.suPosition)], 'goto', 'Su reference not found']}))
             }
             else
             {
