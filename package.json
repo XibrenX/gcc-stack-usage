@@ -2,9 +2,10 @@
 	"name": "gcc-stack-usage",
 	"displayName": "Gcc stack usage",
 	"description": "Show gcc stack usage analysis for functions in VSCode",
-	"version": "1.0.2",
+	"version": "1.1.0",
 	"publisher": "wibren-wiersma",
 	"repository": "https://github.com/XibrenX/gcc-stack-usage",
+	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.74.0"
 	},
@@ -32,7 +33,7 @@
 				{
 					"id": "gcc-stack-usage",
 					"title": "Gcc stack usage",
-					"icon": "$(symbol-structure)"
+					"icon": "icon.png"
 				}
 			]
 		},

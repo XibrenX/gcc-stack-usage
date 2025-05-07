@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { SuStore, SuLine, StackKind } from './suStore';
 import * as path from 'path'
 
-class GlobalStackUsageTreeItem extends vscode.TreeItem
+class GlobalStackUsageSuLineTreeItem extends vscode.TreeItem
 {
     constructor(public readonly suLine: SuLine)
     {
@@ -14,22 +14,40 @@ class GlobalStackUsageTreeItem extends vscode.TreeItem
     }
 }
 
-export class GlobalStackUsageDataProvider implements vscode.TreeDataProvider<GlobalStackUsageTreeItem>
+class GlobalStackUsageCategoryTreeItem extends vscode.TreeItem
 {
+    constructor(public readonly stackKind: StackKind)
+    {
+        super(stackKind === StackKind.dynamic ? 'dynamic' : 'static')
+        this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded
+        Object.setPrototypeOf(this, GlobalStackUsageCategoryTreeItem.prototype);
+    }
+}
+
+export class GlobalStackUsageDataProvider implements vscode.TreeDataProvider<GlobalStackUsageSuLineTreeItem | GlobalStackUsageCategoryTreeItem>
+{
+    public showLimit: number = 100
+
     constructor(private readonly suStore: SuStore)
     {}
 
     readonly onDidChangeTreeData = this.suStore.onFilesUpdated
 
-    getTreeItem(element: GlobalStackUsageTreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: GlobalStackUsageSuLineTreeItem | GlobalStackUsageCategoryTreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element
     }
-    getChildren(element?: GlobalStackUsageTreeItem | undefined): vscode.ProviderResult<GlobalStackUsageTreeItem[]> {
-        if (element)
+    getChildren(element?: GlobalStackUsageSuLineTreeItem | GlobalStackUsageCategoryTreeItem | undefined): vscode.ProviderResult<GlobalStackUsageSuLineTreeItem[] | GlobalStackUsageCategoryTreeItem[]> {
+        if (element === undefined)
         {
-            return []
+            return [new GlobalStackUsageCategoryTreeItem(StackKind.dynamic), new GlobalStackUsageCategoryTreeItem(StackKind.static)]
+        } 
+        else if (element instanceof GlobalStackUsageCategoryTreeItem)
+        {
+            return this.suStore.files.flatMap(v => v.lines).filter(v => v.stackKind === element.stackKind).sort(SuLine.sortDescending).slice(0, this.showLimit).map(l => new GlobalStackUsageSuLineTreeItem(l))
         }
-
-        return this.suStore.files.flatMap(v => v.lines).sort(SuLine.sortDescending).slice(0, 100).map(l => new GlobalStackUsageTreeItem(l))
+        else
+        {
+            return
+        }
     }
 }
