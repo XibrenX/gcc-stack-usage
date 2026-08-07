@@ -2,7 +2,7 @@
 	"name": "gcc-stack-usage",
 	"displayName": "Gcc stack usage",
 	"description": "Show gcc stack usage analysis for functions in VSCode",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"publisher": "wibren-wiersma",
 	"repository": "https://github.com/XibrenX/gcc-stack-usage",
 	"keywords": [
