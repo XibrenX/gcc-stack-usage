@@ -19,39 +19,34 @@ export class SuLine {
 
         const firstParts = parts[0].split(':');
         this.fileName = firstParts[0];
-        this.position = new vscode.Position(Number(firstParts[1]) -1, Number(firstParts[2]) -1);
+        this.position = new vscode.Position(Number(firstParts[1]) - 1, Number(firstParts[2]));
         this.function = firstParts.slice(3).join(':');
 
         this.stack = Number(parts[1]);
         this.stackKind = parts[2] == 'static' ? StackKind.static : StackKind.dynamic;
     }
 
-    matchesFileName(otherFileName: string): boolean
-    {
+    matchesFileName(otherFileName: string): boolean {
         let matchFileName = this.fileName;
-        if (!matchFileName.startsWith(path.sep))
-        {
+        if (!matchFileName.startsWith(path.sep)) {
             matchFileName = path.sep + matchFileName;
         }
 
         return otherFileName.endsWith(matchFileName);
     }
 
-    static sortDescending(lhs: SuLine, rhs: SuLine): number
-    {
-        if (lhs.stackKind !== rhs.stackKind)
-        {
+    static sortDescending(lhs: SuLine, rhs: SuLine): number {
+        if (lhs.stackKind !== rhs.stackKind) {
             return rhs.stackKind - lhs.stackKind;
         }
         return rhs.stack - lhs.stack;
     }
 }
 
-export class SuFile
-{
+export class SuFile {
     private readonly _lines: SuLine[] = [];
-    
-    public get lines(): SuLine[] { 
+
+    public get lines(): SuLine[] {
         return this._lines;
     }
 
@@ -59,12 +54,10 @@ export class SuFile
         this._lines = [];
     }
 
-    async update()
-    {
+    async update() {
         this.lines.length = 0;
 
-        try
-        {
+        try {
             const stat = await vscode.workspace.fs.stat(this.file);
             this.lastWritten = stat.mtime;
 
@@ -80,29 +73,25 @@ export class SuFile
                 lineIndex += 1;
             }
         }
-        catch (error)
-        {
+        catch (error) {
             console.error(error);
         }
     }
 
-    onDelete()
-    {
+    onDelete() {
         this.lines.length = 0;
         this.lastWritten = new Date().getTime();
     }
 }
 
-export class SuStore
-{
+export class SuStore {
     private readonly _files = new Map<string, SuFile>();
     private readonly _asyncOperationsStore = new AsyncOperationsStore();
 
     public get onFilesUpdated(): vscode.Event<void> { return this._asyncOperationsStore.onAllOperationsDone; }
     public get files(): SuFile[] { return Array.from(this._files.values()); }
 
-    update()
-    {
+    update() {
         this._asyncOperationsStore.addOperation(async () => {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Window,
@@ -111,8 +100,7 @@ export class SuStore
             }, async (progress) => {
 
                 progress.report({ increment: 0 });
-                for(const file of this.files)
-                {
+                for (const file of this.files) {
                     file.onDelete();
                 }
 
@@ -127,16 +115,14 @@ export class SuStore
 
                 progress.report({ increment: 100 });
 
-                if (this._files.size == 0)
-                {
+                if (this._files.size == 0) {
                     vscode.window.showWarningMessage('No .su files found!\nPlease compile with `-fstack-usage`.');
                 }
             });
         });
     }
 
-    onAddOrUpdate(uri: vscode.Uri)
-    {
+    onAddOrUpdate(uri: vscode.Uri) {
         this._asyncOperationsStore.addOperation(async () => {
             console.log(`On add or update ${uri.fsPath}`);
             const suFile = this._files.get(uri.fsPath) ?? new SuFile(uri);
@@ -145,8 +131,7 @@ export class SuStore
         });
     }
 
-    onDelete(uri: vscode.Uri)
-    {
+    onDelete(uri: vscode.Uri) {
         this._asyncOperationsStore.addOperation(async () => {
             console.log(`On delete ${uri.fsPath}`);
             const suFile = this._files.get(uri.fsPath);
@@ -156,8 +141,7 @@ export class SuStore
         });
     }
 
-    dispose()
-    {
+    dispose() {
         this._asyncOperationsStore.dispose();
         this._files.clear();
     }

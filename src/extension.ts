@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.languages.registerCodeLensProvider({ language: 'c' }, codeLensProvider);
 	vscode.window.registerTreeDataProvider('gcc-stack-usage.globalStackUsage', new GlobalStackUsageDataProvider(suStore));
 	vscode.window.registerTreeDataProvider('gcc-stack-usage.currentFileStackUsage', new CurrentFileStackUsageDataProvider(suStore));
-	
+
 	context.subscriptions.push(vscode.commands.registerCommand('gcc-stack-usage.updateSuStore', async () => {
 		await suStore.update();
 	}));

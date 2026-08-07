@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 
 const DEFAULT_TIMEOUT_MS = 1000;
 
-export class AsyncOperationsStore
-{
+export class AsyncOperationsStore {
     private _timerRunning: boolean = false;
     private _timerId: NodeJS.Timeout | null = null;
     private _timerInvalidated: boolean = false;
@@ -13,25 +12,20 @@ export class AsyncOperationsStore
     private readonly _onAllOperationsDone: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     readonly onAllOperationsDone: vscode.Event<void> = this._onAllOperationsDone.event;
 
-    addOperation(operation: () => Promise<any>)
-    {
+    addOperation(operation: () => Promise<any>) {
         this._store.push(operation);
-        if (this._timerRunning)
-        {
+        if (this._timerRunning) {
             this._timerInvalidated = true;
             console.log('AsyncOperationsStore: Timer invalidated');
         }
-        else
-        {
+        else {
             this.startTimer();
         }
         console.log('AsyncOperationsStore: Added operation');
     }
 
-    private startTimer()
-    {
-        if (!this._disposed)
-        {
+    private startTimer() {
+        if (!this._disposed) {
             this._timerRunning = true;
             this._timerInvalidated = false;
             this._timerId = setTimeout(() => this.onTimer(), DEFAULT_TIMEOUT_MS);
@@ -39,16 +33,13 @@ export class AsyncOperationsStore
         }
     }
 
-    private async onTimer()
-    {
+    private async onTimer() {
         this._timerId = null;
         console.log('AsyncOperationsStore: Handle timer');
 
-        while (this._store.length > 0 && !this._timerInvalidated && !this._disposed)
-        {
+        while (this._store.length > 0 && !this._timerInvalidated && !this._disposed) {
             const operation = this._store.shift();
-            if (operation)
-            {
+            if (operation) {
                 console.log('AsyncOperationsStore: Processing operation');
                 await operation();
             }
@@ -56,20 +47,17 @@ export class AsyncOperationsStore
 
         if (this._store.length > 0) {
             this.startTimer();
-        } 
-        else
-        {
+        }
+        else {
             this._timerRunning = false;
             this._onAllOperationsDone.fire();
             console.log('AsyncOperationsStore: All operations done');
         }
     }
 
-    dispose()
-    {
+    dispose() {
         this._disposed = true;
-        if (this._timerId)
-        {
+        if (this._timerId) {
             clearTimeout(this._timerId);
         }
         console.log('AsyncOperationsStore: Disposed');

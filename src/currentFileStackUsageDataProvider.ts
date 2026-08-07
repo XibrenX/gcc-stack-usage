@@ -10,8 +10,7 @@ class CurrentFileStackUsageTreeItem extends vscode.TreeItem {
     }
 }
 
-export class CurrentFileStackUsageDataProvider implements vscode.TreeDataProvider<CurrentFileStackUsageTreeItem>
-{
+export class CurrentFileStackUsageDataProvider implements vscode.TreeDataProvider<CurrentFileStackUsageTreeItem> {
     private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
 
     constructor(private readonly suStore: SuStore) {
@@ -35,11 +34,9 @@ export class CurrentFileStackUsageDataProvider implements vscode.TreeDataProvide
         return this.suStore.files.flatMap(f => f.lines).filter(l => l.matchesFileName(filename)).sort(SuLine.sortDescending).map(l => new CurrentFileStackUsageTreeItem(l));
     }
 
-    resolveTreeItem(item: vscode.TreeItem, element: CurrentFileStackUsageTreeItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem>
-    {
+    resolveTreeItem(item: vscode.TreeItem, element: CurrentFileStackUsageTreeItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem> {
         const activeTextEditor = vscode.window.activeTextEditor;
-        if (activeTextEditor)
-        {
+        if (activeTextEditor) {
             item.command = { title: 'Jump to position', command: 'editor.action.goToLocations', arguments: [activeTextEditor.document.uri, activeTextEditor.selection.start, [new vscode.Location(activeTextEditor.document.uri, element.suLine.position)], 'goto', 'Position not found'] };
         }
 
