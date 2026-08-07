@@ -5,9 +5,17 @@
 	"version": "1.1.0",
 	"publisher": "wibren-wiersma",
 	"repository": "https://github.com/XibrenX/gcc-stack-usage",
+	"keywords": [
+		"gcc",
+		"gnu",
+		"stack",
+		"binary",
+		"size",
+		"elf"
+	],
 	"icon": "icon.png",
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.100.0"
 	},
 	"categories": [
 		"Other"
@@ -41,11 +49,13 @@
 			"gcc-stack-usage": [
 				{
 					"id": "gcc-stack-usage.globalStackUsage",
-					"name": "Global stack usage"
+					"name": "Global stack usage",
+					"icon": "$(globe)"
 				},
 				{
 					"id": "gcc-stack-usage.currentFileStackUsage",
-					"name": "Current file stack usage"
+					"name": "Current file stack usage",
+					"icon": "$(file-binary)"
 				}
 			]
 		},
@@ -72,11 +82,12 @@
 		"watch": "tsc -watch -p ./"
 	},
 	"devDependencies": {
-		"@types/node": "^16.18.34",
-		"@types/vscode": "^1.73.0",
-		"@typescript-eslint/eslint-plugin": "^6.7.0",
-		"@typescript-eslint/parser": "^6.7.0",
-		"eslint": "^8.26.0",
-		"typescript": "^5.3.2"
+		"@eslint/js": "^10.0.1",
+		"@stylistic/eslint-plugin": "^5.10.0",
+		"@types/node": "^24.1.0",
+		"@types/vscode": "^1.100.0",
+		"eslint": "^10.8.0",
+		"typescript-eslint": "^8.66.0",
+		"typescript": "^6.0.0"
 	}
 }

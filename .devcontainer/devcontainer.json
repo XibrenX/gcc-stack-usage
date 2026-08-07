@@ -1,0 +1,13 @@
+{
+	"name": "Node.js & TypeScript",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-trixie",
+	"postCreateCommand": "npm install -g @vscode/vsce",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"editor.formatOnSave": true,
+				"editor.formatOnSaveMode": "file"
+			}
+		}
+	}
+}
